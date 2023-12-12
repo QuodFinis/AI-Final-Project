@@ -1,4 +1,4 @@
-Team Ditto: Mahmud Hasan, John Royal, Nur Mazumder, Erlin Paredes
+Team MENJ: Mahmud Hasan, John Royal, Nur Mazumder, Erlin Paredes
 
 Libraries used
 Pandas
