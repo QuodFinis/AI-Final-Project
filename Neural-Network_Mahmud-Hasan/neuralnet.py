@@ -150,29 +150,30 @@ w1, b1, w2, b2 = gradient_descent(X_train, Y_train, 0.1, 500)
 
 
 def make_predictions(X, w1, b1, w2, b2):
-    _, _, _, A2 = forward_prop(w1, b1, w2, b2, X)
+    _, _, _, A2 = forward_prop(w1, b1, w2, b2, X.T)
     predictions = get_predictions(A2)
     return predictions
 
 
-def test_prediction(index, w1, b1, w2, b2):
-    # importing training data as pandas dataframe
+def load_test_data():
+    # Importing test data as pandas dataframe
     curr_dir = os.getcwd()
     path = os.path.join(curr_dir, '../test.csv')
-    data = pd.read_csv(path)
+    data_test = pd.read_csv(path)
 
-    data = np.array(data)
-    m, n = data.shape
-    np.random.shuffle(data)  # shuffle before splitting into dev and training sets
+    data_test = np.array(data_test)
+    m_test, n_test = data_test.shape
 
-    data_test = data[0:m].T
-    Y_train = data_test[0]
-    X_train = data_test[1:n]
-    X_train = X_train / 255.
+    Y_test = data_test[:, 0]
+    X_test = data_test[:, 1:n_test].T
+    X_test = X_test / 255.
 
-    current_image = X_train[:, index, None]
-    prediction = make_predictions(X_train[:, index, None], w1, b1, w2, b2)
-    label = Y_train[index]
+    return X_test, Y_test
+
+def test_prediction(X_test, Y_test, index, w1, b1, w2, b2):
+    current_image = X_test[:, index]
+    prediction = make_predictions(current_image, w1, b1, w2, b2)
+    label = Y_test[index]
     print("Prediction: ", prediction)
     print("Label: ", label)
 
@@ -181,7 +182,16 @@ def test_prediction(index, w1, b1, w2, b2):
     plt.imshow(current_image, interpolation='nearest')
     plt.show()
 
-test_prediction(0, w1, b1, w2, b2)
-test_prediction(1, w1, b1, w2, b2)
-test_prediction(2, w1, b1, w2, b2)
-test_prediction(3, w1, b1, w2, b2)
+
+# Load test data outside the function
+X_test, Y_test = load_test_data()
+
+# Test on the entire test dataset
+for i in range(len(Y_test)):
+    test_prediction(X_test, Y_test, i, w1, b1, w2, b2)
+
+# Test on individual images
+test_prediction(X_test, Y_test, 0, w1, b1, w2, b2)
+test_prediction(X_test, Y_test, 1, w1, b1, w2, b2)
+test_prediction(X_test, Y_test, 2, w1, b1, w2, b2)
+test_prediction(X_test, Y_test, 3, w1, b1, w2, b2)
