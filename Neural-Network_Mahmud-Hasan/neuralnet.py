@@ -26,7 +26,7 @@ data = np.array(data)
 m, n = data.shape
 np.random.shuffle(data)  # shuffle before splitting into dev and training sets
 
-data_train = data[0:m].T
+data_train = data[1000:m].T
 Y_train = data_train[0]
 X_train = data_train[1:n]
 X_train = X_train / 255.
@@ -146,52 +146,22 @@ def gradient_descent(X, Y, alpha, iterations):
     return w1, b1, w2, b2
 
 
-w1, b1, w2, b2 = gradient_descent(X_train, Y_train, 0.1, 500)
+w1, b1, w2, b2 = gradient_descent(X_train, Y_train, 0.1, 501)
 
 
-def make_predictions(X, w1, b1, w2, b2):
-    _, _, _, A2 = forward_prop(w1, b1, w2, b2, X.T)
+# test model on remaining  data
+data_train = data[0:1000].T
+Y_test = data_train[0]
+X_test = data_train[1:n]
+X_test = X_test / 255.
+
+def test_neural_network(w1, b1, w2, b2, X_test, Y_test):
+    Z1, A1, Z2, A2 = forward_prop(w1, b1, w2, b2, X_test)
     predictions = get_predictions(A2)
+    accuracy = get_accuracy(predictions, Y_test)
+    print("Test Accuracy: ", accuracy)
+
     return predictions
 
-
-def load_test_data():
-    # Importing test data as pandas dataframe
-    curr_dir = os.getcwd()
-    path = os.path.join(curr_dir, '../test.csv')
-    data_test = pd.read_csv(path)
-
-    data_test = np.array(data_test)
-    m_test, n_test = data_test.shape
-
-    Y_test = data_test[:, 0]
-    X_test = data_test[:, 1:n_test].T
-    X_test = X_test / 255.
-
-    return X_test, Y_test
-
-def test_prediction(X_test, Y_test, index, w1, b1, w2, b2):
-    current_image = X_test[:, index]
-    prediction = make_predictions(current_image, w1, b1, w2, b2)
-    label = Y_test[index]
-    print("Prediction: ", prediction)
-    print("Label: ", label)
-
-    current_image = current_image.reshape((28, 28)) * 255
-    plt.gray()
-    plt.imshow(current_image, interpolation='nearest')
-    plt.show()
-
-
-# Load test data outside the function
-X_test, Y_test = load_test_data()
-
-# Test on the entire test dataset
-for i in range(len(Y_test)):
-    test_prediction(X_test, Y_test, i, w1, b1, w2, b2)
-
-# Test on individual images
-test_prediction(X_test, Y_test, 0, w1, b1, w2, b2)
-test_prediction(X_test, Y_test, 1, w1, b1, w2, b2)
-test_prediction(X_test, Y_test, 2, w1, b1, w2, b2)
-test_prediction(X_test, Y_test, 3, w1, b1, w2, b2)
+# Test the neural network on the provided test dataset
+test_predictions = test_neural_network(w1, b1, w2, b2, X_test, Y_test)
