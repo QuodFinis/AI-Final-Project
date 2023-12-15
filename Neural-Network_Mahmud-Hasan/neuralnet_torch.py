@@ -1,51 +1,76 @@
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchvision import datasets, transforms
+import pandas as pd
+from torch.utils.data import DataLoader, TensorDataset
 
-# Load the MNIST dataset
-train_set = datasets.MNIST(root='./data', train=True, download=True, transform=transforms.ToTensor())
-train_loader = torch.utils.data.DataLoader(train_set, batch_size=64, shuffle=True)
-
-# Define the network architecture
+# Define the model
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(28 * 28, 10)  # equivalent to w1 and b1
-        self.fc2 = nn.Linear(10, 10)  # equivalent to w2 and b2
+        self.fc1 = nn.Linear(784, 10)
+        self.fc2 = nn.Linear(10, 10)
 
     def forward(self, x):
-        x = x.view(-1, 28 * 28)
-        x = torch.relu(self.fc1(x))  # equivalent to ReLU(Z1)
-        x = self.fc2(x)  # equivalent to Z2
+        x = torch.relu(self.fc1(x))
+        x = self.fc2(x)
         return x
 
-# Create the network
-net = Net()
+def main():
+    # Load data
+    curr_dir = os.getcwd()
+    path = os.path.join(curr_dir, '../train.csv')
+    data = pd.read_csv(path)
 
-# Define the loss function and optimizer
-criterion = nn.CrossEntropyLoss()  # equivalent to softmax and the loss calculation
-optimizer = optim.SGD(net.parameters(), lr=0.1)  # equivalent to update_params
+    # Prepare the data
+    data = torch.tensor(data.values).float()
+    m, n = data.shape
+    data = data[torch.randperm(m)]  # shuffle before splitting into dev and training sets
 
-# Train the network
-for epoch in range(501):  # loop over the dataset multiple times
-    for i, data in enumerate(train_loader, 0):
-        # get the inputs; data is a list of [inputs, labels]
-        inputs, labels = data
+    X_train = data[1000:, 1:] / 255.
+    Y_train = data[1000:, 0]
 
-        # zero the parameter gradients
-        optimizer.zero_grad()
+    X_test = data[:1000, 1:] / 255.
+    Y_test = data[:1000, 0]
 
-        # forward + backward + optimize
-        outputs = net(inputs)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
+    # Create dataloaders
+    train_dataset = TensorDataset(X_train, Y_train)
+    train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 
-        if epoch % 500 == 0:
-            _, predicted = torch.max(outputs.data, 1)
-            correct = (predicted == labels).sum().item()
-            accuracy = 100 * correct / len(labels)
-            print(f"Iteration: {epoch}, Accuracy: {accuracy}%")
+    test_dataset = TensorDataset(X_test, Y_test)
+    test_dataloader = DataLoader(test_dataset, batch_size=64, shuffle=True)
 
-print('Finished Training')
+    # Initialize the model and optimizer
+    model = Net()
+    optimizer = optim.SGD(model.parameters(), lr=0.1)
+
+    # Define the loss function
+    criterion = nn.CrossEntropyLoss()
+
+    # Training loop
+    for epoch in range(500):
+        for inputs, targets in train_dataloader:
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, targets.long())
+            loss.backward()
+            optimizer.step()
+
+        # Print accuracy
+        if epoch % 100 == 0:
+            correct = 0
+            total = 0
+            with torch.no_grad():
+                for inputs, targets in test_dataloader:
+                    outputs = model(inputs)
+                    _, predicted = torch.max(outputs.data, 1)
+                    total += targets.size(0)
+                    correct += (predicted == targets).sum().item()
+            accuracy = 100 * correct / total
+            print(f"Iteration: {epoch}, Test Accuracy: {accuracy}%")
+
+    print("Completed")
+
+if __name__ == "__main__":
+    main()

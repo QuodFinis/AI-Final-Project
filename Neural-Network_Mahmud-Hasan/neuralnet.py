@@ -165,6 +165,3 @@ def test_neural_network(w1, b1, w2, b2, X_test, Y_test):
 
 # Test the neural network on the provided test dataset
 test_predictions = test_neural_network(w1, b1, w2, b2, X_test, Y_test)
-
-
-# 
