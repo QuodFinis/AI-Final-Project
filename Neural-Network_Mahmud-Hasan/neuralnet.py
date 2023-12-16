@@ -94,6 +94,9 @@ def dydx_ReLU(Z):
     return (Z > 0).astype(int)  # if x less than 0 returns 0 if greater return 1, slope of y=z
 
 
+# the gradients of the loss with respect to the weights and biases are computed. While the specific loss function (
+# cross-entropy or another) is not explicitly shown, the goal is still to adjust the parameters (w1, b1, w2,
+# b2) to minimize the prediction error.
 def backward_prop(Z1, A1, Z2, A2, w1, w2, X, Y):
     one_hot_Y = one_hot(Y)
     dZ2 = A2 - one_hot_Y
@@ -146,7 +149,7 @@ def gradient_descent(X, Y, alpha, iterations):
     return w1, b1, w2, b2
 
 
-w1, b1, w2, b2 = gradient_descent(X_train, Y_train, 0.1, 501)
+w1, b1, w2, b2 = gradient_descent(X_train, Y_train, 0.1, 500)
 
 
 # test model on remaining  data

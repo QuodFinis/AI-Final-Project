@@ -1,9 +1,29 @@
 import os
+import time
 import torch
-import torch.nn as nn
-import torch.optim as optim
 import pandas as pd
+import torch.nn as nn
+import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
+
+# Load and prepare data
+curr_dir = os.getcwd()
+path = os.path.join(curr_dir, '../train.csv')
+data = pd.read_csv(path)
+
+# Convert data to PyTorch tensors and shuffle
+data = torch.tensor(data.values).float()
+m, n = data.shape
+data = data[torch.randperm(m)]
+
+# Split data into training and test sets
+data_train = data[1000:m]
+Y_train = data_train[:, 0].long()
+X_train = data_train[:, 1:n] / 255.
+
+data_test = data[0:1000]
+Y_test = data_test[:, 0].long()
+X_test = data_test[:, 1:n] / 255.
 
 # Define the model
 class Net(nn.Module):
@@ -13,64 +33,61 @@ class Net(nn.Module):
         self.fc2 = nn.Linear(10, 10)
 
     def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = self.fc2(x)
+        x = F.relu(self.fc1(x))
+        x = F.softmax(self.fc2(x), dim=1)
         return x
 
-def main():
-    # Load data
-    curr_dir = os.getcwd()
-    path = os.path.join(curr_dir, '../train.csv')
-    data = pd.read_csv(path)
+# optimizer is an algorithm or method used to adjust the parameters of your model to minimize the error or loss.
+# The optimizer updates the model parameters by a rule defined by the optimization algorithm being used. In this case,
+# we’re using Stochastic Gradient Descent (SGD)
+model = Net()
+optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
 
-    # Prepare the data
-    data = torch.tensor(data.values).float()
-    m, n = data.shape
-    data = data[torch.randperm(m)]  # shuffle before splitting into dev and training sets
 
-    X_train = data[1000:, 1:] / 255.
-    Y_train = data[1000:, 0]
+# Training a model on the entire dataset at once can be computationally expensive, especially for large datasets. To
+# overcome this, we divide the dataset into smaller subsets known as batches. We then use these batches to train the
+# model iteratively, updating the model parameters after each batch.
+# Shuffling the training data is important to prevent the model from learning the order of the training examples. This
+# helps to make sure that the model generalizes well and doesn’t overfit to the training data.
+train_data = TensorDataset(X_train, Y_train)
+train_loader = DataLoader(train_data, batch_size=64, shuffle=True)
 
-    X_test = data[:1000, 1:] / 255.
-    Y_test = data[:1000, 0]
+test_data = TensorDataset(X_test, Y_test)
+test_loader = DataLoader(test_data, batch_size=64)
 
-    # Create dataloaders
-    train_dataset = TensorDataset(X_train, Y_train)
-    train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 
-    test_dataset = TensorDataset(X_test, Y_test)
-    test_dataloader = DataLoader(test_dataset, batch_size=64, shuffle=True)
+# Training loop
+for epoch in range(100):
+    start_time = time.time()  # Start timer
+    for inputs, labels in train_loader:
+        optimizer.zero_grad()
+        outputs = model(inputs)
 
-    # Initialize the model and optimizer
-    model = Net()
-    optimizer = optim.SGD(model.parameters(), lr=0.1)
+        # Cross-entropy loss, commonly known as log loss, serves as a crucial metric for evaluating the performance
+        # of classification models, especially in the realm of neural networks. It quantifies the disparity between
+        # predicted probabilities and the actual distribution of labels. The loss is formulated as the negative log
+        # probability of the true class, encouraging the model to assign high probabilities to correct classes and
+        # penalizing confidently incorrect predictions. During training, the objective is to minimize this
+        # cross-entropy loss, essentially aligning the predicted probability distribution with the true distribution.
+        # The probabilistic interpretation underscores its role in optimizing the likelihood of observed data given
+        # the model's parameters. Gradients of the loss are computed during training, and the model parameters are
+        # adjusted through iterative optimization techniques, such as gradient descent, to minimize the loss. In the
+        # context of neural networks, cross-entropy loss is often paired with softmax activation in the output layer
+        # to ensure interpretable probabilities.
+        loss = F.cross_entropy(outputs, labels)
+        loss.backward()
+        optimizer.step()
 
-    # Define the loss function
-    criterion = nn.CrossEntropyLoss()
-
-    # Training loop
-    for epoch in range(500):
-        for inputs, targets in train_dataloader:
-            optimizer.zero_grad()
-            outputs = model(inputs)
-            loss = criterion(outputs, targets.long())
-            loss.backward()
-            optimizer.step()
-
-        # Print accuracy
-        if epoch % 100 == 0:
-            correct = 0
-            total = 0
-            with torch.no_grad():
-                for inputs, targets in test_dataloader:
-                    outputs = model(inputs)
-                    _, predicted = torch.max(outputs.data, 1)
-                    total += targets.size(0)
-                    correct += (predicted == targets).sum().item()
-            accuracy = 100 * correct / total
-            print(f"Iteration: {epoch}, Test Accuracy: {accuracy}%")
-
-    print("Completed")
-
-if __name__ == "__main__":
-    main()
+    # Print accuracy and time taken every 10 iterations
+    if epoch % 10 == 0:
+        end_time = time.time()  # End timer
+        elapsed_time = end_time - start_time  # Calculate elapsed time
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for inputs, labels in test_loader:
+                outputs = model(inputs)
+                _, predicted = torch.max(outputs.data, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+        print('Iteration: {}, Accuracy: {}, Time taken for last 10 iterations: {} seconds'.format(epoch, correct / total, elapsed_time))
