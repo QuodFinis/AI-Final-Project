@@ -5,6 +5,8 @@ import pandas as pd
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
+from matplotlib import pyplot as plt
+
 
 # Load and prepare data
 curr_dir = os.getcwd()
@@ -91,3 +93,27 @@ for epoch in range(100):
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
         print('Iteration: {}, Accuracy: {}, Time taken for last 10 iterations: {} seconds'.format(epoch, correct / total, elapsed_time))
+
+# Visualize predictions for a few test samples
+def test_prediction(index):
+    current_image = X_test[index, :].view(28, 28).numpy() * 255
+    current_image = current_image.astype(int)
+    label = Y_test[index].item()
+
+    with torch.no_grad():
+        inputs = X_test[index, :].view(1, -1)
+        outputs = model(inputs)
+        _, predicted = torch.max(outputs.data, 1)
+        prediction = predicted.item()
+
+    print("Prediction: ", prediction)
+    print("Label: ", label)
+
+    plt.gray()
+    plt.imshow(current_image, interpolation='nearest')
+    plt.title(f"Prediction: {prediction}, Label: {label}")
+    plt.show()
+
+# Test the neural network on the provided test dataset
+for i in range(5):  # Test the first 5 samples
+    test_prediction(i)
