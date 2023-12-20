@@ -22,4 +22,3 @@ To run these notebooks, you will need to install Python and the above-mentioned 
 
 ```bash
 pip install numpy matplotlib seaborn sklearn tensorflow opencv-python pillow
-
