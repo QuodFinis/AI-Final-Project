@@ -1,1 +1,25 @@
+# Machine Learning Notebooks
+
+This repository contains a collection of Jupyter Notebooks demonstrating various machine learning models and techniques. Below is a brief overview of each notebook along with the required libraries to run them.
+
+## Notebooks
+
+### 1. CNN (Convolutional Neural Network)
+- **Description:** This notebook focuses on the implementation and analysis of a Convolutional Neural Network (CNN) model.
+- **Required Libraries:** TensorFlow, NumPy, Matplotlib, OpenCV (cv2)
+
+### 2. Naive Bayes
+- **Description:** Implementation of the Naive Bayes algorithm for classification tasks.
+- **Required Libraries:** TensorFlow, NumPy, Matplotlib, OpenCV (cv2), Scikit-learn, PIL
+
+### 3. Logistic Regression
+- **Description:** Logistic Regression model used for predictive analysis.
+- **Required Libraries:** NumPy, Matplotlib, Seaborn, Scikit-learn
+
+## Installation
+
+To run these notebooks, you will need to install Python and the above-mentioned libraries. You can install these libraries using pip:
+
+```bash
+pip install numpy matplotlib seaborn sklearn tensorflow opencv-python pillow
 
