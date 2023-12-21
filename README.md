@@ -47,7 +47,7 @@ Each group member implemented text recognition using a different type of model.
 
 ### K-Means (John Royal)
 
-[Description here]
+The K-Means clustering algorithm is implemented from scratch using `numpy`. Data is preprocessed by converting the 28x28 input images into a 784x1 vector, and normalizing the values such that they range from 0 to 1, instead of the original 0 to 255. The training data is augmented with rotated versions of the original images to make the training data more robust. To analyze the data, we compute the accuracy of each cluster and plot a confusion matrix. This, as well as the results of our implementation, are included in `K-Means_John-Royal/main.ipynb`.
 
 ### KNN (Erlin Paredes)
 

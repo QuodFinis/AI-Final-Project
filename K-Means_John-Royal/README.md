@@ -13,5 +13,5 @@ These are all implemented using classes and functions, which are called from `ma
 
 To run this:
 1. Make sure you have the dependencies from the `requirements.txt` in the main directory. 
-2. Consider adjusting the configuration constants at the top of `main.ipynb`, especially the `MAX_ITER` value. With the current value, 100, the from-scratch implementation took over 5 minutes to run.
+2. Consider adjusting the configuration constants at the top of `main.ipynb`, especially the `MAX_ITER` value. With the current value, 100, the from-scratch implementation took over 15 minutes to run.
 3. Run `main.ipynb`.
