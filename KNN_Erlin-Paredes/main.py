@@ -38,6 +38,6 @@ knn = cv2.ml.KNearest_create()
 knn.train(cells, cv2.ml.ROW_SAMPLE, cells_labels)
 ret, result, neighbours, dist = knn.findNearest(test_cells, k=1)
 
-test_digits = np.vsplit(test_digit, 50)
+test_digits = np.vsplit(test_digits, 50)
 
 print(result)
